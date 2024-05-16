@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
+import 'package:matule/features/home/bloc/category_bloc.dart';
+import 'package:matule/features/home/data/repositories/category_repository.dart';
 import 'package:matule/features/user/bloc/user_bloc.dart';
 import 'package:matule/features/user/data/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +37,23 @@ Future<void> main() async {
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ3huY29wam5wZmhubmxxbXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTUyNzgyNDcsImV4cCI6MjAzMDg1NDI0N30.G51chKUkj2lZvjV_LV100v_jpfIKiGG1qPsTPPaVjWw'
       });
   final dio = Dio(options);
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+        logger.i('REQUEST[${options.method}] => PATH: ${options.path}');
+        return handler.next(options);
+      },
+      onResponse: (Response response, ResponseInterceptorHandler handler) {
+        logger.i('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
+        return handler.next(response);
+      },
+      onError: (DioException error, ErrorInterceptorHandler handler) {
+        logger.e('ERROR[${error.response?.statusCode}] => PATH: ${error.requestOptions.path}');
+        logger.e(error.response?.data);
+        return handler.next(error);
+      },
+    ),
+  );
   GetIt.I.registerSingleton(dio);
 
   runApp(const MatuleApp());
@@ -56,8 +75,10 @@ class _MatuleAppState extends State<MatuleApp> {
   Widget build(BuildContext context) {
     final onboardingRepository =
         OnboardingRepository(prefs: GetIt.I<SharedPreferences>());
-    final userRepository =
-        UserRepository(dio: GetIt.I<Dio>(), preferences: GetIt.I<SharedPreferences>());
+    final userRepository = UserRepository(
+        dio: GetIt.I<Dio>(), preferences: GetIt.I<SharedPreferences>());
+    final categoryRepository = CategoryRepository(
+        dio: GetIt.I<Dio>());
 
     return MultiBlocProvider(
       providers: [
@@ -66,8 +87,10 @@ class _MatuleAppState extends State<MatuleApp> {
               OnboardingCubit(onboardingRepository: onboardingRepository),
         ),
         BlocProvider(
-          create: (context) =>
-              UserBloc(userRepository: userRepository),
+          create: (context) => UserBloc(userRepository: userRepository),
+        ),
+        BlocProvider(
+          create: (context) => CategoryBloc(categoryRepository: categoryRepository),
         ),
       ],
       child: MaterialApp.router(
