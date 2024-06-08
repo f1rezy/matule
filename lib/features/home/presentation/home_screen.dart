@@ -5,7 +5,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:matule/core/navigation/navigation.dart';
 import 'package:matule/core/theme/theme.dart';
 import 'package:matule/features/home/bloc/category_bloc.dart';
-// import 'package:pinput/pinput.dart';
 import 'package:shrink_sidemenu/shrink_sidemenu.dart';
 
 @RoutePage()
@@ -38,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
       type: SideMenuType.shrikNRotate,
       child: GestureDetector(
         onTap: () {
-          final _state = _sideMenuKey.currentState;
-          if (_state!.isOpened) _state.closeSideMenu();
+          final state = _sideMenuKey.currentState;
+          if (state!.isOpened) state.closeSideMenu();
         },
         child: Scaffold(
           backgroundColor: Color.fromARGB(255, 231, 231, 231),
@@ -140,11 +139,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       IconButton(
                         icon: SvgPicture.asset('assets/icons/profile.svg'),
                         onPressed: () {
-                          final _state = _sideMenuKey.currentState;
-                          if (_state!.isOpened)
-                            _state.closeSideMenu();
-                          else
-                            _state.openSideMenu();
+                          final state = _sideMenuKey.currentState;
+                          if (state!.isOpened) {
+                            state.closeSideMenu();
+                          } else {
+                            state.openSideMenu();
+                          }
                         },
                       ),
                     ],
